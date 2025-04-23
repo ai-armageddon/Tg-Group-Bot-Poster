@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telegram Post Composer</title>
+  <link rel="stylesheet" href="https://unpkg.com/98.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #008080; /* Windows 98 teal background */
+      margin: 0;
+      padding: 20px;
+      font-family: Arial;
+      font-size: 11px;
+    }
+
+    /* Override some Tailwind styles to work better with 98.css */
+    .window {
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      background-color: #c0c0c0 !important;
+    }
+
+    /* Custom styles for our app */
+    .app-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .window-body {
+      padding: 8px;
+    }
+
+    .field-row {
+      margin-bottom: 8px;
+    }
+
+    /* Fix for button styles */
+    button {
+      min-width: 70px;
+      min-height: 23px;
+    }
+
+    /* Status bar styles */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">Telegram Post Composer</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+          <button aria-label="Maximize"></button>
+          <button aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="window-body">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Left Column -->
+        <div>
+          <!-- Bot Selector -->
+          <fieldset>
+            <legend>Bot Selection</legend>
+
+            <div class="space-y-4 mb-4" id="bots-container">
+              <!-- Default Bot with Destination -->
+              <div class="window" style="width: 100%; margin-bottom: 8px;" data-bot-id="default">
+                <!-- Bot Header -->
+                <div class="title-bar" data-bot-id="default">
+                  <div class="title-bar-text">
+                    <div class="field-row">
+                      <input
+                        type="radio"
+                        id="default-bot"
+                        name="selectedBot"
+                        checked
+                        class="bot-radio"
+                        data-bot-id="default"
+                      />
+                      <label for="default-bot">Default Bot</label>
+                    </div>
+                  </div>
+                  <div class="title-bar-controls">
+                    <button
+                      class="toggle-active"
+                      style="min-width: 50px;"
+                    >
+                      Active
+                    </button>
+                    <button
+                      id="edit-default-bot-btn"
+                      style="min-width: 50px;"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Destination Section for this Bot -->
+                <div class="window-body destination-container">
+                  <div class="field-row" style="justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;">Destination</h3>
+                    <button class="edit-destination-btn">
+                      Edit
+                    </button>
+                  </div>
+
+                  <!-- Destination Display -->
+                  <div class="destination-display sunken-panel" style="padding: 8px; margin-top: 8px;">
+                    <div class="field-row">
+                      <label>Group:</label>
+                      <span class="group-label">My Telegram Group</span>
+                      <span class="group-id" style="color: #666;">(your-chat-id-here)</span>
+                    </div>
+
+                    <div class="field-row">
+                      <label>Topic:</label>
+                      <span class="topic-label">General</span>
+                      <span class="topic-id" style="color: #666;">(11)</span>
+                    </div>
+                  </div>
+
+                  <!-- Destination Edit Form -->
+                  <div class="destination-form hidden" style="margin-top: 8px;">
+                    <div class="field-row-stacked" style="width: 100%">
+                      <label for="group-label-input">Group Label</label>
+                      <input
+                        type="text"
+                        id="group-label-input"
+                        class="group-label-input"
+                        value="My Telegram Group"
+                        placeholder="My Telegram Group"
+                      />
+                    </div>
+
+                    <div class="field-row-stacked" style="width: 100%">
+                      <label for="group-id-input">Group ID</label>
+                      <input
+                        type="text"
+                        id="group-id-input"
+                        class="group-id-input"
+                        value="your-chat-id-here"
+                      />
+                    </div>
+
+                    <div class="field-row-stacked" style="width: 100%">
+                      <label for="topic-label-input">Topic Label</label>
+                      <input
+                        type="text"
+                        id="topic-label-input"
+                        class="topic-label-input"
+                        value="General"
+                        placeholder="General"
+                      />
+                    </div>
+
+                    <div class="field-row-stacked" style="width: 100%">
+                      <label for="topic-id-input">Topic ID</label>
+                      <input
+                        type="text"
+                        id="topic-id-input"
+                        class="topic-id-input"
+                        value="your-topic-id-here"
+                      />
+                    </div>
+
+                    <div class="field-row" style="justify-content: flex-end; margin-top: 8px;">
+                      <button class="save-destination-btn">
+                        Save
+                      </button>
+                      <button class="cancel-destination-btn">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Additional bots will be added here dynamically -->
+            </div>
+
+            <button id="add-bot-btn">
+              Add New Bot
+            </button>
+
+            <!-- Add New Bot Form -->
+            <div id="add-bot-form" class="hidden" style="margin-top: 16px;">
+              <div class="window" style="width: 100%;">
+                <div class="title-bar">
+                  <div class="title-bar-text">Add New Bot</div>
+                </div>
+                <div class="window-body">
+                  <div class="field-row-stacked" style="width: 100%">
+                    <label for="botName">Bot Name</label>
+                    <input
+                      type="text"
+                      id="botName"
+                      placeholder="My Bot"
+                    />
+                  </div>
+
+                  <div class="field-row-stacked" style="width: 100%">
+                    <label for="botToken">Bot Token</label>
+                    <input
+                      type="text"
+                      id="botToken"
+                      placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+                    />
+                  </div>
+
+                  <div class="field-row" style="justify-content: flex-end; margin-top: 16px;">
+                    <button id="save-bot-btn">
+                      Add Bot
+                    </button>
+                    <button id="cancel-bot-btn">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Default Bot Form -->
+            <div id="edit-default-bot-form" class="hidden" style="margin-top: 16px;">
+              <div class="window" style="width: 100%;">
+                <div class="title-bar">
+                  <div class="title-bar-text">Edit Default Bot</div>
+                </div>
+                <div class="window-body">
+                  <div class="field-row-stacked" style="width: 100%">
+                    <label for="defaultBotName">Bot Name</label>
+                    <input
+                      type="text"
+                      id="defaultBotName"
+                      value="Default Bot"
+                    />
+                  </div>
+
+                  <div class="field-row-stacked" style="width: 100%">
+                    <label for="defaultBotToken">Bot Token</label>
+                    <input
+                      type="text"
+                      id="defaultBotToken"
+                      value="your-bot-token-here"
+                    />
+                  </div>
+
+                  <div class="field-row" style="justify-content: flex-end; margin-top: 16px;">
+                    <button id="save-default-bot-btn">
+                      Save Changes
+                    </button>
+                    <button id="cancel-default-bot-btn">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Post Composer -->
+          <fieldset>
+            <legend>Compose Post</legend>
+
+            <div class="field-row-stacked" style="width: 100%">
+              <textarea
+                id="post-text"
+                rows="8"
+                placeholder="Write your message here..."
+              ></textarea>
+            </div>
+
+            <div id="media-preview" class="hidden" style="margin-top: 8px; position: relative;">
+              <div class="sunken-panel" style="padding: 4px;">
+                <img
+                  id="preview-image"
+                  src=""
+                  alt="Preview"
+                  style="max-height: 300px; width: 100%; object-fit: contain;"
+                  class="hidden"
+                />
+                <video
+                  id="preview-video"
+                  src=""
+                  controls
+                  style="max-height: 300px; width: 100%; object-fit: contain;"
+                  class="hidden"
+                ></video>
+
+                <button
+                  id="remove-media-btn"
+                  style="position: absolute; top: 8px; right: 8px;"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div class="field-row" style="margin-top: 8px;">
+              <button id="add-media-btn">
+                Add Media
+              </button>
+              <input
+                type="file"
+                id="media-input"
+                accept="image/*,video/*"
+                class="hidden"
+              />
+
+              <span style="margin-left: 8px; color: #666;">
+                Supports images and videos
+              </span>
+            </div>
+          </fieldset>
+
+          <!-- Send Button -->
+          <div style="margin-top: 16px;">
+            <button
+              id="send-post-btn"
+              class="default"
+              style="width: 100%;"
+            >
+              Send Post
+            </button>
+
+            <div id="status-message" class="sunken-panel hidden" style="margin-top: 8px; padding: 8px;">
+              <!-- Status message will appear here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div>
+          <!-- Post Preview -->
+          <fieldset>
+            <legend>Post Preview</legend>
+
+            <div class="window" style="width: 100%;">
+              <div class="title-bar">
+                <div class="title-bar-text">Telegram Message</div>
+              </div>
+              <div class="window-body">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                  <div style="width: 32px; height: 32px; background-color: #0088cc; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                    B
+                  </div>
+                  <div style="margin-left: 8px;">
+                    <div style="font-weight: bold;">Your Bot</div>
+                    <div style="font-size: 10px; color: #666;">Just now</div>
+                  </div>
+                </div>
+
+                <div id="preview-media-container" class="sunken-panel hidden" style="margin-bottom: 8px; padding: 4px;">
+                  <img
+                    id="preview-image-display"
+                    src=""
+                    alt="Preview"
+                    style="max-height: 300px; width: 100%; object-fit: contain;"
+                    class="hidden"
+                  />
+                  <video
+                    id="preview-video-display"
+                    src=""
+                    controls
+                    style="max-height: 300px; width: 100%; object-fit: contain;"
+                    class="hidden"
+                  ></video>
+                </div>
+
+                <div id="preview-text" class="sunken-panel" style="padding: 8px; white-space: pre-wrap; word-break: break-word;">
+                  <div style="color: #666; font-style: italic;">
+                    No content to preview
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Additional Info -->
+          <fieldset style="margin-top: 16px;">
+            <legend>Help</legend>
+            <div class="window" style="width: 100%;">
+              <div class="title-bar">
+                <div class="title-bar-text">Instructions</div>
+                <div class="title-bar-controls">
+                  <button aria-label="Help"></button>
+                </div>
+              </div>
+              <div class="window-body">
+                <p style="margin-bottom: 8px;">To send a post:</p>
+                <ul class="tree-view" style="margin-bottom: 8px;">
+                  <li>Select a bot from the Bot Selection panel</li>
+                  <li>Configure the destination (group and topic)</li>
+                  <li>Compose your message with text and/or media</li>
+                  <li>Click "Send Post" to publish</li>
+                </ul>
+                <p>You can add multiple bots and label your groups and topics for better organization.</p>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Destination Info -->
+          <fieldset style="margin-top: 16px;">
+            <legend>Destination</legend>
+            <div class="window" style="width: 100%;">
+              <div class="title-bar">
+                <div class="title-bar-text">Current Settings</div>
+              </div>
+              <div class="window-body">
+                <div class="field-row">
+                  <label>Group ID:</label>
+                  <span>your-chat-id-here</span>
+                </div>
+                <div class="field-row">
+                  <label>Topic ID:</label>
+                  <span>11</span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+      </div>
+      <div class="status-bar">
+        <p class="status-bar-field">Ready</p>
+        <p class="status-bar-field">Telegram Bot API v6.8</p>
+        <p class="status-bar-field">CPU Usage: 0%</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API URLs
+    const API_URL = 'http://localhost:3001/api';
+    let defaultBotId = null;
+    let defaultDestinationId = null;
+
+    // Load data on page load
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Load default bot
+        const botResponse = await fetch(`${API_URL}/bots/default`);
+        if (botResponse.ok) {
+          const defaultBot = await botResponse.json();
+          defaultBotId = defaultBot._id;
+          document.querySelector('label[for="default-bot"]').textContent = defaultBot.name;
+          document.getElementById('defaultBotName').value = defaultBot.name;
+          document.getElementById('defaultBotToken').value = defaultBot.token;
+
+          // Update the default bot radio with the correct ID
+          const defaultBotRadio = document.getElementById('default-bot');
+          if (defaultBotRadio) {
+            defaultBotRadio.dataset.botId = defaultBot._id;
+          }
+        }
+
+        // Load default destination
+        const destResponse = await fetch(`${API_URL}/destinations/default`);
+        if (destResponse.ok) {
+          const defaultDest = await destResponse.json();
+          defaultDestinationId = defaultDest._id;
+
+          // Find the default bot's destination container
+          const defaultBotContainer = document.querySelector('.window');
+          if (defaultBotContainer) {
+            const destContainer = defaultBotContainer.querySelector('.destination-container');
+
+            // Update the destination display
+            destContainer.querySelector('.group-label').textContent = defaultDest.groupLabel || 'My Telegram Group';
+            destContainer.querySelector('.group-id').textContent = `(${defaultDest.groupId})`;
+            destContainer.querySelector('.topic-label').textContent = defaultDest.topicLabel || 'General';
+            destContainer.querySelector('.topic-id').textContent = `(${defaultDest.topicId || ''})`;
+
+            // Update the form fields
+            destContainer.querySelector('.group-label-input').value = defaultDest.groupLabel || 'My Telegram Group';
+            destContainer.querySelector('.group-id-input').value = defaultDest.groupId;
+            destContainer.querySelector('.topic-label-input').value = defaultDest.topicLabel || 'General';
+            destContainer.querySelector('.topic-id-input').value = defaultDest.topicId || '';
+          }
+        }
+
+        // Load all other bots
+        const allBotsResponse = await fetch(`${API_URL}/bots`);
+        if (allBotsResponse.ok) {
+          const allBots = await allBotsResponse.json();
+          const botsContainer = document.getElementById('bots-container');
+
+          // Skip the default bot which is already displayed
+          const nonDefaultBots = allBots.filter(bot => !bot.isDefault);
+
+          // Add each non-default bot to the UI
+          for (const bot of nonDefaultBots) {
+            // Get destinations for this bot
+            let destinations = [];
+            try {
+              const destResponse = await fetch(`${API_URL}/destinations/bot/${bot._id}`);
+              if (destResponse.ok) {
+                destinations = await destResponse.json();
+              }
+            } catch (error) {
+              console.error(`Error loading destinations for bot ${bot._id}:`, error);
+            }
+
+            // Use the first destination or create a default one
+            const destination = destinations.length > 0 ? destinations[0] : {
+              groupId: '',
+              groupLabel: 'No Group Selected',
+              topicId: '',
+              topicLabel: ''
+            };
+
+            const botHtml = `
+              <div class="window" style="width: 100%; margin-bottom: 8px;" data-bot-id="${bot._id}">
+                <!-- Bot Header -->
+                <div class="title-bar" data-bot-id="${bot._id}">
+                  <div class="title-bar-text">
+                    <div class="field-row">
+                      <input
+                        type="radio"
+                        id="bot-${bot._id}"
+                        name="selectedBot"
+                        class="bot-radio"
+                        data-bot-id="${bot._id}"
+                        ${!bot.isActive ? 'disabled' : ''}
+                      />
+                      <label for="bot-${bot._id}">${bot.name}</label>
+                    </div>
+                  </div>
+                  <div class="title-bar-controls">
+                    <button
+                      class="toggle-active"
+                      style="min-width: 50px; ${!bot.isActive ? 'background-color: #d3d3d3;' : ''}"
+                    >
+                      ${bot.isActive ? 'Active' : 'Inactive'}
+                    </button>
+                    <button
+                      class="remove-bot"
+                      style="min-width: 50px;"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Destination Section for this Bot -->
+                <div class="window-body destination-container">
+                  <div class="field-row" style="justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;">Destination</h3>
+                    <button class="edit-destination-btn">
+                      Edit
+                    </button>
+                  </div>
+
+                  <!-- Destination Display -->
+                  <div class="destination-display sunken-panel" style="padding: 8px; margin-top: 8px;">
+                    <div class="field-row">
+                      <label>Group:</label>
+                      <span class="group-label">${destination.groupLabel}</span>
+                      <span class="group-id" style="color: #666;">(${destination.groupId})</span>
+                    </div>
+
+                    <div class="field-row">
+                      <label>Topic:</label>
+                      <span class="topic-label">${destination.topicLabel || 'None'}</span>
+                      <span class="topic-id" style="color: #666;">(${destination.topicId || ''})</span>
+                    </div>
+                  </div>
+
+                  <!-- Destination Edit Form -->
+                  <div class="destination-form hidden" style="margin-top: 8px;">
+                    <div class="field-row-stacked" style="width: 100%">
+                      <label>Group Label</label>
+                      <input
+                        type="text"
+                        class="group-label-input"
+                        value="${destination.groupLabel}"
+                        placeholder="My Telegram Group"
+                      />
+                    </div>
+
+                    <div class="field-row-stacked" style="width: 100%">
+                      <label>Group ID</label>
+                      <input
+                        type="text"
+                        class="group-id-input"
+                        value="${destination.groupId}"
+                      />
+                    </div>
+
+                    <div class="field-row-stacked" style="width: 100%">
+                      <label>Topic Label</label>
+                      <input
+                        type="text"
+                        class="topic-label-input"
+                        value="${destination.topicLabel || ''}"
+                        placeholder="General"
+                      />
+                    </div>
+
+                    <div class="field-row-stacked" style="width: 100%">
+                      <label>Topic ID</label>
+                      <input
+                        type="text"
+                        class="topic-id-input"
+                        value="${destination.topicId || ''}"
+                      />
+                    </div>
+
+                    <div class="field-row" style="justify-content: flex-end; margin-top: 8px;">
+                      <button class="save-destination-btn">
+                        Save
+                      </button>
+                      <button class="cancel-destination-btn">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            botsContainer.insertAdjacentHTML('beforeend', botHtml);
+          }
+
+          // Add event listeners to the new elements
+          document.querySelectorAll('.edit-destination-btn').forEach(button => {
+            button.addEventListener('click', function() {
+              const container = this.closest('.destination-container');
+              container.querySelector('.destination-form').classList.remove('hidden');
+              this.classList.add('hidden');
+            });
+          });
+
+          document.querySelectorAll('.cancel-destination-btn').forEach(button => {
+            button.addEventListener('click', function() {
+              const container = this.closest('.destination-container');
+              container.querySelector('.destination-form').classList.add('hidden');
+              container.querySelector('.edit-destination-btn').classList.remove('hidden');
+            });
+          });
+
+          document.querySelectorAll('.save-destination-btn').forEach(button => {
+            button.addEventListener('click', saveDestinationHandler);
+          });
+
+          // Add event listeners to bot radios and buttons
+          document.querySelectorAll('.bot-radio').forEach(radio => {
+            radio.addEventListener('change', botRadioChangeHandler);
+          });
+
+          document.querySelectorAll('.toggle-active').forEach(button => {
+            button.addEventListener('click', toggleActiveHandler);
+          });
+
+          document.querySelectorAll('.remove-bot').forEach(button => {
+            button.addEventListener('click', removeBotHandler);
+          });
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Continue with local data if API is not available
+      }
+    });
+
+    // Handler functions
+    function botRadioChangeHandler() {
+      if (this.checked) {
+        // Highlight the selected bot
+        document.querySelectorAll('.window').forEach(container => {
+          container.style.boxShadow = '';
+        });
+        this.closest('.window').style.boxShadow = '0 0 0 2px #0078d7';
+      }
+    }
+
+    async function saveDestinationHandler() {
+      const container = this.closest('.destination-container');
+      const botContainer = this.closest('.window');
+      const botRadio = botContainer.querySelector('.bot-radio');
+      const botId = botRadio ? botRadio.dataset.botId : 'default';
+
+      const groupLabel = container.querySelector('.group-label-input').value;
+      const groupId = container.querySelector('.group-id-input').value;
+      const topicLabel = container.querySelector('.topic-label-input').value;
+      const topicId = container.querySelector('.topic-id-input').value;
+
+      if (!groupId) {
+        alert('Group ID is required');
+        return;
+      }
+
+      try {
+        // Find existing destination for this bot or create a new one
+        let destinationId = null;
+        let method = 'POST';
+
+        // If this is the default bot, use the default destination ID
+        if (botId === defaultBotId) {
+          destinationId = defaultDestinationId;
+          method = destinationId ? 'PUT' : 'POST';
+        } else {
+          // Try to find an existing destination for this bot
+          try {
+            const destResponse = await fetch(`${API_URL}/destinations/bot/${botId}`);
+            if (destResponse.ok) {
+              const destinations = await destResponse.json();
+              if (destinations.length > 0) {
+                destinationId = destinations[0]._id;
+                method = 'PUT';
+              }
+            }
+          } catch (error) {
+            console.error(`Error finding destination for bot ${botId}:`, error);
+          }
+        }
+
+        // Update in MongoDB
+        const url = destinationId ?
+          `${API_URL}/destinations/${destinationId}` :
+          `${API_URL}/destinations`;
+
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            botId: botId,
+            groupId: groupId,
+            groupLabel: groupLabel || 'My Telegram Group',
+            topicId: topicId,
+            topicLabel: topicLabel || 'General',
+            isDefault: botId === defaultBotId // Only the default bot's destination is default
+          })
+        });
+
+        if (response.ok) {
+          const updatedDest = await response.json();
+
+          // If this is the default bot, update the default destination ID
+          if (botId === defaultBotId) {
+            defaultDestinationId = updatedDest._id;
+          }
+
+          // Update the displayed values
+          container.querySelector('.group-label').textContent = groupLabel || 'My Telegram Group';
+          container.querySelector('.group-id').textContent = `(${groupId})`;
+          container.querySelector('.topic-label').textContent = topicLabel || 'General';
+          container.querySelector('.topic-id').textContent = `(${topicId})`;
+
+          // Hide the form
+          container.querySelector('.destination-form').classList.add('hidden');
+          container.querySelector('.edit-destination-btn').classList.remove('hidden');
+
+          // Show success message
+          showStatus('success', 'Destination updated and saved to database');
+        } else {
+          throw new Error('Failed to update destination');
+        }
+      } catch (error) {
+        console.error('Error saving destination:', error);
+
+        // Fallback to local update if API fails
+        container.querySelector('.group-label').textContent = groupLabel || 'My Telegram Group';
+        container.querySelector('.group-id').textContent = `(${groupId})`;
+        container.querySelector('.topic-label').textContent = topicLabel || 'General';
+        container.querySelector('.topic-id').textContent = `(${topicId})`;
+        container.querySelector('.destination-form').classList.add('hidden');
+        container.querySelector('.edit-destination-btn').classList.remove('hidden');
+        showStatus('success', 'Destination updated locally (database update failed)');
+      }
+    }
+
+    // Bot management
+    document.getElementById('add-bot-btn').addEventListener('click', function() {
+      document.getElementById('add-bot-form').classList.remove('hidden');
+      this.classList.add('hidden');
+    });
+
+    document.getElementById('cancel-bot-btn').addEventListener('click', function() {
+      document.getElementById('add-bot-form').classList.add('hidden');
+      document.getElementById('add-bot-btn').classList.remove('hidden');
+    });
+
+    // Edit default bot
+    document.getElementById('edit-default-bot-btn').addEventListener('click', function() {
+      document.getElementById('edit-default-bot-form').classList.remove('hidden');
+      document.getElementById('add-bot-btn').classList.add('hidden');
+    });
+
+    document.getElementById('cancel-default-bot-btn').addEventListener('click', function() {
+      document.getElementById('edit-default-bot-form').classList.add('hidden');
+      document.getElementById('add-bot-btn').classList.remove('hidden');
+    });
+
+    document.getElementById('save-default-bot-btn').addEventListener('click', async function() {
+      const botName = document.getElementById('defaultBotName').value;
+      const botToken = document.getElementById('defaultBotToken').value;
+
+      if (!botName || !botToken) {
+        alert('Please enter both bot name and token');
+        return;
+      }
+
+      try {
+        // Update in MongoDB
+        const url = defaultBotId ?
+          `${API_URL}/bots/${defaultBotId}` :
+          `${API_URL}/bots`;
+
+        const method = defaultBotId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: botName,
+            token: botToken,
+            isActive: true,
+            isDefault: true
+          })
+        });
+
+        if (response.ok) {
+          const updatedBot = await response.json();
+          defaultBotId = updatedBot._id;
+
+          // Update the default bot label
+          document.querySelector('label[for="default-bot"]').textContent = botName;
+
+          // Hide the edit form
+          document.getElementById('edit-default-bot-form').classList.add('hidden');
+          document.getElementById('add-bot-btn').classList.remove('hidden');
+
+          // Show success message
+          showStatus('success', 'Default bot updated and saved to database');
+        } else {
+          throw new Error('Failed to update bot');
+        }
+      } catch (error) {
+        console.error('Error saving bot:', error);
+
+        // Fallback to local update if API fails
+        document.querySelector('label[for="default-bot"]').textContent = botName;
+        document.getElementById('edit-default-bot-form').classList.add('hidden');
+        document.getElementById('add-bot-btn').classList.remove('hidden');
+        showStatus('success', 'Default bot updated locally (database update failed)');
+      }
+    });
+
+    document.getElementById('save-bot-btn').addEventListener('click', async function() {
+      const botName = document.getElementById('botName').value;
+      const botToken = document.getElementById('botToken').value;
+
+      if (!botName || !botToken) {
+        alert('Please enter both bot name and token');
+        return;
+      }
+
+      try {
+        // Save to MongoDB
+        const response = await fetch(`${API_URL}/bots`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: botName,
+            token: botToken,
+            isActive: true,
+            isDefault: false
+          })
+        });
+
+        if (response.ok) {
+          const newBot = await response.json();
+
+          // Create new bot entry
+          const botsContainer = document.getElementById('bots-container');
+          const newBotHtml = `
+            <div class="border rounded overflow-hidden">
+              <!-- Bot Header -->
+              <div class="flex items-center justify-between p-2 border-b bg-gray-50 hover:bg-gray-100" data-bot-id="${newBot._id}">
+                <div class="flex items-center">
+                  <input
+                    type="radio"
+                    id="bot-${newBot._id}"
+                    name="selectedBot"
+                    class="mr-2 bot-radio"
+                    data-bot-id="${newBot._id}"
+                  />
+                  <label for="bot-${newBot._id}">${botName}</label>
+                </div>
+
+                <div class="flex space-x-2">
+                  <button
+                    class="px-2 py-1 text-xs rounded bg-green-100 text-green-800 toggle-active"
+                  >
+                    Active
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded remove-bot"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+
+              <!-- Destination Section for this Bot -->
+              <div class="p-3 destination-container">
+                <div class="flex justify-between items-center mb-2">
+                  <h3 class="text-sm font-medium text-gray-700">Destination</h3>
+                  <button
+                    class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded edit-destination-btn"
+                  >
+                    Edit
+                  </button>
+                </div>
+
+                <!-- Destination Display -->
+                <div class="destination-display p-2 bg-gray-50 rounded border">
+                  <div class="mb-2">
+                    <span class="text-sm font-medium">Group:</span>
+                    <span class="text-sm ml-1 group-label">No Group Selected</span>
+                    <span class="text-xs text-gray-500 ml-1 group-id">()</span>
+                  </div>
+
+                  <div>
+                    <span class="text-sm font-medium">Topic:</span>
+                    <span class="text-sm ml-1 topic-label">None</span>
+                    <span class="text-xs text-gray-500 ml-1 topic-id">()</span>
+                  </div>
+                </div>
+
+                <!-- Destination Edit Form -->
+                <div class="destination-form hidden mt-2 p-2 bg-gray-50 rounded border">
+                  <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                      Group Label
+                    </label>
+                    <input
+                      type="text"
+                      class="group-label-input w-full px-2 py-1 border rounded text-sm"
+                      value=""
+                      placeholder="My Telegram Group"
+                    />
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                      Group ID
+                    </label>
+                    <input
+                      type="text"
+                      class="group-id-input w-full px-2 py-1 border rounded text-sm"
+                      value=""
+                    />
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                      Topic Label
+                    </label>
+                    <input
+                      type="text"
+                      class="topic-label-input w-full px-2 py-1 border rounded text-sm"
+                      value=""
+                      placeholder="General"
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                      Topic ID
+                    </label>
+                    <input
+                      type="text"
+                      class="topic-id-input w-full px-2 py-1 border rounded text-sm"
+                      value=""
+                    />
+                  </div>
+
+                  <div class="flex space-x-2">
+                    <button
+                      class="px-2 py-1 text-xs bg-blue-600 text-white rounded save-destination-btn"
+                    >
+                      Save
+                    </button>
+                    <button
+                      class="px-2 py-1 text-xs bg-gray-200 text-gray-800 rounded cancel-destination-btn"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Use insertAdjacentHTML instead of innerHTML += to avoid breaking existing event listeners
+          botsContainer.insertAdjacentHTML('beforeend', newBotHtml);
+
+          // Reset form and show add button
+          document.getElementById('botName').value = '';
+          document.getElementById('botToken').value = '';
+          document.getElementById('add-bot-form').classList.add('hidden');
+          document.getElementById('add-bot-btn').classList.remove('hidden');
+
+          // Add event listeners to new buttons
+          addBotButtonListeners();
+
+          // Show success message
+          showStatus('success', 'New bot added and saved to database');
+        } else {
+          throw new Error('Failed to save bot');
+        }
+      } catch (error) {
+        console.error('Error saving bot:', error);
+
+        // Fallback to local update if API fails
+        const botsContainer = document.getElementById('bots-container');
+        const botId = Date.now().toString();
+        const newBotHtml = `
+          <div class="border rounded overflow-hidden">
+            <!-- Bot Header -->
+            <div class="flex items-center justify-between p-2 border-b bg-gray-50 hover:bg-gray-100" data-bot-id="${botId}">
+              <div class="flex items-center">
+                <input
+                  type="radio"
+                  id="bot-${botId}"
+                  name="selectedBot"
+                  class="mr-2 bot-radio"
+                  data-bot-id="${botId}"
+                />
+                <label for="bot-${botId}">${botName}</label>
+              </div>
+
+              <div class="flex space-x-2">
+                <button
+                  class="px-2 py-1 text-xs rounded bg-green-100 text-green-800 toggle-active"
+                >
+                  Active
+                </button>
+                <button
+                  class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded remove-bot"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <!-- Destination Section for this Bot -->
+            <div class="p-3 destination-container">
+              <div class="flex justify-between items-center mb-2">
+                <h3 class="text-sm font-medium text-gray-700">Destination</h3>
+                <button
+                  class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded edit-destination-btn"
+                >
+                  Edit
+                </button>
+              </div>
+
+              <!-- Destination Display -->
+              <div class="destination-display p-2 bg-gray-50 rounded border">
+                <div class="mb-2">
+                  <span class="text-sm font-medium">Group:</span>
+                  <span class="text-sm ml-1 group-label">No Group Selected</span>
+                  <span class="text-xs text-gray-500 ml-1 group-id">()</span>
+                </div>
+
+                <div>
+                  <span class="text-sm font-medium">Topic:</span>
+                  <span class="text-sm ml-1 topic-label">None</span>
+                  <span class="text-xs text-gray-500 ml-1 topic-id">()</span>
+                </div>
+              </div>
+
+              <!-- Destination Edit Form -->
+              <div class="destination-form hidden mt-2 p-2 bg-gray-50 rounded border">
+                <div class="mb-2">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">
+                    Group Label
+                  </label>
+                  <input
+                    type="text"
+                    class="group-label-input w-full px-2 py-1 border rounded text-sm"
+                    value=""
+                    placeholder="My Telegram Group"
+                  />
+                </div>
+
+                <div class="mb-2">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">
+                    Group ID
+                  </label>
+                  <input
+                    type="text"
+                    class="group-id-input w-full px-2 py-1 border rounded text-sm"
+                    value=""
+                  />
+                </div>
+
+                <div class="mb-2">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">
+                    Topic Label
+                  </label>
+                  <input
+                    type="text"
+                    class="topic-label-input w-full px-2 py-1 border rounded text-sm"
+                    value=""
+                    placeholder="General"
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <label class="block text-xs font-medium text-gray-700 mb-1">
+                    Topic ID
+                  </label>
+                  <input
+                    type="text"
+                    class="topic-id-input w-full px-2 py-1 border rounded text-sm"
+                    value=""
+                  />
+                </div>
+
+                <div class="flex space-x-2">
+                  <button
+                    class="px-2 py-1 text-xs bg-blue-600 text-white rounded save-destination-btn"
+                  >
+                    Save
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs bg-gray-200 text-gray-800 rounded cancel-destination-btn"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Use insertAdjacentHTML instead of innerHTML += to avoid breaking existing event listeners
+        botsContainer.insertAdjacentHTML('beforeend', newBotHtml);
+
+        // Reset form and show add button
+        document.getElementById('botName').value = '';
+        document.getElementById('botToken').value = '';
+        document.getElementById('add-bot-form').classList.add('hidden');
+        document.getElementById('add-bot-btn').classList.remove('hidden');
+
+        // Add event listeners to new buttons
+        addBotButtonListeners();
+
+        showStatus('success', 'New bot added locally (database save failed)');
+      }
+    });
+
+    function addBotButtonListeners() {
+      // Toggle active state
+      document.querySelectorAll('.toggle-active').forEach(button => {
+        button.removeEventListener('click', toggleActiveHandler);
+        button.addEventListener('click', toggleActiveHandler);
+      });
+
+      // Remove bot
+      document.querySelectorAll('.remove-bot').forEach(button => {
+        button.removeEventListener('click', removeBotHandler);
+        button.addEventListener('click', removeBotHandler);
+      });
+
+      // Edit destination
+      document.querySelectorAll('.edit-destination-btn').forEach(button => {
+        button.removeEventListener('click', function() {
+          const container = this.closest('.destination-container');
+          container.querySelector('.destination-form').classList.remove('hidden');
+          this.classList.add('hidden');
+        });
+        button.addEventListener('click', function() {
+          const container = this.closest('.destination-container');
+          container.querySelector('.destination-form').classList.remove('hidden');
+          this.classList.add('hidden');
+        });
+      });
+
+      // Cancel destination edit
+      document.querySelectorAll('.cancel-destination-btn').forEach(button => {
+        button.removeEventListener('click', function() {
+          const container = this.closest('.destination-container');
+          container.querySelector('.destination-form').classList.add('hidden');
+          container.querySelector('.edit-destination-btn').classList.remove('hidden');
+        });
+        button.addEventListener('click', function() {
+          const container = this.closest('.destination-container');
+          container.querySelector('.destination-form').classList.add('hidden');
+          container.querySelector('.edit-destination-btn').classList.remove('hidden');
+        });
+      });
+
+      // Save destination
+      document.querySelectorAll('.save-destination-btn').forEach(button => {
+        button.removeEventListener('click', saveDestinationHandler);
+        button.addEventListener('click', saveDestinationHandler);
+      });
+
+      // Bot radios
+      document.querySelectorAll('.bot-radio').forEach(radio => {
+        radio.removeEventListener('change', botRadioChangeHandler);
+        radio.addEventListener('change', botRadioChangeHandler);
+      });
+    }
+
+    async function toggleActiveHandler() {
+      const botElement = this.closest('.window');
+      const botHeader = this.closest('.title-bar');
+      const botId = botHeader ? botHeader.dataset.botId : botElement.querySelector('.bot-radio').dataset.botId;
+      const isActive = this.textContent.trim() === 'Active';
+
+      // Update UI first for responsiveness
+      if (isActive) {
+        this.textContent = 'Inactive';
+        this.style.backgroundColor = '#d3d3d3';
+
+        // Disable radio button
+        const radioBtn = botElement.querySelector('input[type="radio"]');
+        radioBtn.disabled = true;
+
+        // If this was selected, select the default bot
+        if (radioBtn.checked) {
+          document.getElementById('default-bot').checked = true;
+        }
+      } else {
+        this.textContent = 'Active';
+        this.style.backgroundColor = '';
+
+        // Enable radio button
+        const radioBtn = botElement.querySelector('input[type="radio"]');
+        radioBtn.disabled = false;
+      }
+
+      // Update in database if we have an ID
+      if (botId) {
+        try {
+          const response = await fetch(`${API_URL}/bots/${botId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              isActive: !isActive
+            })
+          });
+
+          if (!response.ok) {
+            console.error('Failed to update bot active status in database');
+          }
+        } catch (error) {
+          console.error('Error updating bot active status:', error);
+        }
+      }
+    }
+
+    async function removeBotHandler() {
+      const botElement = this.closest('.window');
+      const botHeader = this.closest('.title-bar');
+      const botId = botHeader ? botHeader.dataset.botId : botElement.querySelector('.bot-radio').dataset.botId;
+      const radioBtn = botElement.querySelector('input[type="radio"]');
+
+      // If this was selected, select the default bot
+      if (radioBtn.checked) {
+        document.getElementById('default-bot').checked = true;
+      }
+
+      // Remove from database if we have an ID
+      if (botId) {
+        try {
+          const response = await fetch(`${API_URL}/bots/${botId}`, {
+            method: 'DELETE'
+          });
+
+          if (!response.ok) {
+            console.error('Failed to delete bot from database');
+          }
+        } catch (error) {
+          console.error('Error deleting bot:', error);
+        }
+      }
+
+      // Remove the bot element from UI
+      const containerToRemove = this.closest('.window');
+      if (containerToRemove) {
+        containerToRemove.remove();
+      } else if (botElement) {
+        botElement.remove();
+      }
+      showStatus('success', 'Bot removed');
+    }
+
+    // Media handling
+    document.getElementById('add-media-btn').addEventListener('click', function() {
+      document.getElementById('media-input').click();
+    });
+
+    document.getElementById('media-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const mediaPreview = document.getElementById('media-preview');
+      const previewImage = document.getElementById('preview-image');
+      const previewVideo = document.getElementById('preview-video');
+      const previewMediaContainer = document.getElementById('preview-media-container');
+      const previewImageDisplay = document.getElementById('preview-image-display');
+      const previewVideoDisplay = document.getElementById('preview-video-display');
+
+      // Create object URL
+      const url = URL.createObjectURL(file);
+
+      // Show the appropriate preview based on file type
+      if (file.type.startsWith('image/')) {
+        previewImage.src = url;
+        previewImage.classList.remove('hidden');
+        previewVideo.classList.add('hidden');
+
+        previewImageDisplay.src = url;
+        previewImageDisplay.classList.remove('hidden');
+        previewVideoDisplay.classList.add('hidden');
+      } else if (file.type.startsWith('video/')) {
+        previewVideo.src = url;
+        previewVideo.classList.remove('hidden');
+        previewImage.classList.add('hidden');
+
+        previewVideoDisplay.src = url;
+        previewVideoDisplay.classList.remove('hidden');
+        previewImageDisplay.classList.add('hidden');
+      }
+
+      // Show the preview containers
+      mediaPreview.classList.remove('hidden');
+      previewMediaContainer.classList.remove('hidden');
+
+      // Update preview text
+      updatePreviewText();
+    });
+
+    document.getElementById('remove-media-btn').addEventListener('click', function() {
+      const mediaPreview = document.getElementById('media-preview');
+      const previewImage = document.getElementById('preview-image');
+      const previewVideo = document.getElementById('preview-video');
+      const previewMediaContainer = document.getElementById('preview-media-container');
+      const previewImageDisplay = document.getElementById('preview-image-display');
+      const previewVideoDisplay = document.getElementById('preview-video-display');
+      const mediaInput = document.getElementById('media-input');
+
+      // Clear the file input
+      mediaInput.value = '';
+
+      // Hide the previews
+      mediaPreview.classList.add('hidden');
+      previewMediaContainer.classList.add('hidden');
+
+      // Revoke object URLs to prevent memory leaks
+      if (previewImage.src) URL.revokeObjectURL(previewImage.src);
+      if (previewVideo.src) URL.revokeObjectURL(previewVideo.src);
+      if (previewImageDisplay.src) URL.revokeObjectURL(previewImageDisplay.src);
+      if (previewVideoDisplay.src) URL.revokeObjectURL(previewVideoDisplay.src);
+
+      // Clear sources
+      previewImage.src = '';
+      previewVideo.src = '';
+      previewImageDisplay.src = '';
+      previewVideoDisplay.src = '';
+
+      // Update preview text
+      updatePreviewText();
+    });
+
+    // Text preview
+    document.getElementById('post-text').addEventListener('input', updatePreviewText);
+
+    function updatePreviewText() {
+      const text = document.getElementById('post-text').value;
+      const previewText = document.getElementById('preview-text');
+      const previewMediaContainer = document.getElementById('preview-media-container');
+
+      if (text) {
+        previewText.innerHTML = text;
+      } else if (previewMediaContainer.classList.contains('hidden')) {
+        previewText.innerHTML = '<div class="text-gray-400 italic">No content to preview</div>';
+      } else {
+        previewText.innerHTML = '';
+      }
+    }
+
+    // Send post
+    document.getElementById('send-post-btn').addEventListener('click', async function() {
+      const text = document.getElementById('post-text').value;
+      const mediaInput = document.getElementById('media-input');
+      const statusMessage = document.getElementById('status-message');
+
+      // Validate
+      if (!text && !mediaInput.files.length) {
+        showStatus('error', 'Please add some text or media to your post');
+        return;
+      }
+
+      // Get the selected bot
+      const selectedBotRadio = document.querySelector('.bot-radio:checked');
+      if (!selectedBotRadio) {
+        showStatus('error', 'Please select a bot');
+        return;
+      }
+
+      const botId = selectedBotRadio.dataset.botId;
+      const botContainer = selectedBotRadio.closest('.border.rounded.overflow-hidden');
+      const destContainer = botContainer.querySelector('.destination-container');
+      const groupId = destContainer.querySelector('.group-id-input').value ||
+                     destContainer.querySelector('.group-id').textContent.replace(/[()]/g, '');
+      const topicId = destContainer.querySelector('.topic-id-input').value ||
+                     destContainer.querySelector('.topic-id').textContent.replace(/[()]/g, '');
+
+      if (!groupId) {
+        showStatus('error', 'Please set a Group ID for the selected bot');
+        return;
+      }
+
+      // Show sending status
+      showStatus('info', 'Sending your post...');
+
+      try {
+        // Prepare the request data
+        const requestData = {
+          botId: botId,
+          text: text,
+          chatId: groupId,
+          topicId: topicId
+        };
+
+        // If there's media, add it to the request
+        if (mediaInput.files.length > 0) {
+          const file = mediaInput.files[0];
+          const mediaType = file.type.startsWith('image/') ? 'photo' : 'video';
+
+          // Convert file to base64
+          const reader = new FileReader();
+          const base64Promise = new Promise((resolve) => {
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+          });
+
+          const base64Data = await base64Promise;
+          requestData.mediaType = mediaType;
+          requestData.mediaBase64 = base64Data;
+        }
+
+        // Send the request to the server
+        const response = await fetch(`${API_URL}/messages/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Get the bot and group labels for the success message
+          const botLabel = botContainer.querySelector('label').textContent;
+          const groupLabel = destContainer.querySelector('.group-label').textContent;
+          const topicLabel = destContainer.querySelector('.topic-label').textContent;
+
+          showStatus('success', `Post sent successfully to ${groupLabel}${topicLabel !== 'None' ? ' / ' + topicLabel : ''} using ${botLabel}!`);
+
+          // Clear the form
+          document.getElementById('post-text').value = '';
+          if (document.getElementById('remove-media-btn')) {
+            document.getElementById('remove-media-btn').click();
+          }
+          updatePreviewText();
+        } else {
+          throw new Error(result.message || 'Failed to send post');
+        }
+      } catch (error) {
+        console.error('Error sending post:', error);
+        showStatus('error', `Failed to send post: ${error.message || 'Unknown error'}`);
+      }
+    });
+
+    function showStatus(type, message) {
+      const statusMessage = document.getElementById('status-message');
+      statusMessage.classList.remove('hidden');
+
+      // Update status bar
+      const statusBarField = document.querySelector('.status-bar-field:first-child');
+      if (statusBarField) {
+        statusBarField.textContent = message;
+      }
+
+      // Style based on message type
+      statusMessage.style.backgroundColor = '';
+      if (type === 'success') {
+        statusMessage.style.backgroundColor = '#c6ffc6';
+      } else if (type === 'error') {
+        statusMessage.style.backgroundColor = '#ffc6c6';
+      } else {
+        statusMessage.style.backgroundColor = '#c6c6ff';
+      }
+
+      statusMessage.textContent = message;
+    }
+
+    // Destination editing
+    document.querySelectorAll('.edit-destination-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const container = this.closest('.destination-container');
+        container.querySelector('.destination-form').classList.remove('hidden');
+        this.classList.add('hidden');
+      });
+    });
+
+    document.querySelectorAll('.cancel-destination-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const container = this.closest('.destination-container');
+        container.querySelector('.destination-form').classList.add('hidden');
+        container.querySelector('.edit-destination-btn').classList.remove('hidden');
+      });
+    });
+
+    document.querySelectorAll('.save-destination-btn').forEach(button => {
+      button.addEventListener('click', async function() {
+        const container = this.closest('.destination-container');
+        const botContainer = this.closest('.border.rounded.overflow-hidden');
+        const botRadio = botContainer.querySelector('.bot-radio');
+        const botId = botRadio.dataset.botId;
+
+        const groupLabel = container.querySelector('.group-label-input').value;
+        const groupId = container.querySelector('.group-id-input').value;
+        const topicLabel = container.querySelector('.topic-label-input').value;
+        const topicId = container.querySelector('.topic-id-input').value;
+
+        if (!groupId) {
+          alert('Group ID is required');
+          return;
+        }
+
+        try {
+          // Update in MongoDB
+          const url = defaultDestinationId ?
+            `${API_URL}/destinations/${defaultDestinationId}` :
+            `${API_URL}/destinations`;
+
+          const method = defaultDestinationId ? 'PUT' : 'POST';
+
+          const response = await fetch(url, {
+            method: method,
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              botId: botId === 'default' ? defaultBotId : botId,
+              groupId: groupId,
+              groupLabel: groupLabel || 'My Telegram Group',
+              topicId: topicId,
+              topicLabel: topicLabel || 'General',
+              isDefault: true
+            })
+          });
+
+          if (response.ok) {
+            const updatedDest = await response.json();
+            defaultDestinationId = updatedDest._id;
+
+            // Update the displayed values
+            container.querySelector('.group-label').textContent = groupLabel || 'My Telegram Group';
+            container.querySelector('.group-id').textContent = `(${groupId})`;
+            container.querySelector('.topic-label').textContent = topicLabel || 'General';
+            container.querySelector('.topic-id').textContent = `(${topicId})`;
+
+            // Hide the form
+            container.querySelector('.destination-form').classList.add('hidden');
+            container.querySelector('.edit-destination-btn').classList.remove('hidden');
+
+            // Show success message
+            showStatus('success', 'Destination updated and saved to database');
+          } else {
+            throw new Error('Failed to update destination');
+          }
+        } catch (error) {
+          console.error('Error saving destination:', error);
+
+          // Fallback to local update if API fails
+          container.querySelector('.group-label').textContent = groupLabel || 'My Telegram Group';
+          container.querySelector('.group-id').textContent = `(${groupId})`;
+          container.querySelector('.topic-label').textContent = topicLabel || 'General';
+          container.querySelector('.topic-id').textContent = `(${topicId})`;
+          container.querySelector('.destination-form').classList.add('hidden');
+          container.querySelector('.edit-destination-btn').classList.remove('hidden');
+          showStatus('success', 'Destination updated locally (database update failed)');
+        }
+      });
+    });
+
+    // Add event listeners to bot radios
+    document.querySelectorAll('.bot-radio').forEach(radio => {
+      radio.addEventListener('change', function() {
+        if (this.checked) {
+          // Highlight the selected bot
+          document.querySelectorAll('.border.rounded.overflow-hidden').forEach(container => {
+            container.classList.remove('ring-2', 'ring-blue-500');
+          });
+          this.closest('.border.rounded.overflow-hidden').classList.add('ring-2', 'ring-blue-500');
+        }
+      });
+    });
+
+    // Initialize the selected bot
+    const selectedBot = document.querySelector('.bot-radio:checked');
+    if (selectedBot) {
+      selectedBot.closest('.border.rounded.overflow-hidden').classList.add('ring-2', 'ring-blue-500');
+    }
+
+    // Initialize event listeners
+    addBotButtonListeners();
+  </script>
+</body>
+</html>
