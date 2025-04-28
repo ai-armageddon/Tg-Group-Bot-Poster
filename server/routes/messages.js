@@ -50,11 +50,29 @@ router.post('/send', async (req, res) => {
       const fileName = `telegram_media_${Date.now()}${fileExt}`;
       const filePath = path.join(tempDir, fileName);
 
-      // Remove the base64 prefix (e.g., "data:image/jpeg;base64,")
-      const base64Data = mediaBase64.replace(/^data:([A-Za-z-+/]+);base64,/, '');
+      try {
+        // Remove the base64 prefix (e.g., "data:image/jpeg;base64,")
+        let base64Data = mediaBase64;
 
-      // Write the file
-      fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+        // Check if the base64 string has a data URI prefix
+        if (base64Data.includes('base64,')) {
+          base64Data = base64Data.split('base64,')[1];
+        }
+
+        // Write the file
+        fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+
+        // Verify the file was created and has content
+        const fileStats = fs.statSync(filePath);
+        console.log(`File created: ${filePath}, size: ${fileStats.size} bytes`);
+
+        if (fileStats.size === 0) {
+          throw new Error('Created file is empty');
+        }
+      } catch (error) {
+        console.error('Error processing media file:', error);
+        throw new Error(`Failed to process media: ${error.message}`);
+      }
 
       // Create form data
       const formData = new FormData();
@@ -113,9 +131,25 @@ router.post('/send', async (req, res) => {
     }
   } catch (error) {
     console.error('Error sending Telegram message:', error);
+
+    // Provide more detailed error messages
+    let errorMessage = 'Internal server error';
+
+    if (error.response?.data?.description) {
+      errorMessage = error.response.data.description;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    // Log additional details for debugging
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+    }
+
     return res.status(500).json({
       success: false,
-      message: error.response?.data?.description || 'Internal server error',
+      message: errorMessage,
     });
   }
 });
