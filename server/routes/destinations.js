@@ -41,7 +41,7 @@ router.get('/default', async (req, res) => {
       if (!defaultBot) {
         defaultBot = await Bot.create({
           name: 'Default Bot',
-          token: 'your-bot-token-here',
+          token: process.env.TELEGRAM_BOT_TOKEN || 'your-bot-token',
           isActive: true,
           isDefault: true
         });
@@ -50,9 +50,9 @@ router.get('/default', async (req, res) => {
       // Now create the default destination
       defaultDestination = await Destination.create({
         botId: defaultBot._id,
-        groupId: 'your-chat-id-here',
+        groupId: process.env.CHAT_ID || 'your-chat-id',
         groupLabel: 'My Telegram Group',
-        topicId: '11',
+        topicId: process.env.TOPIC_ID || 'your-topic-id',
         topicLabel: 'General',
         isDefault: true
       });
