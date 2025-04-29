@@ -40,4 +40,8 @@ Thumbs.db
 # Nested git repositories
 app/
 
+# Credentials and sensitive files
 Tg-creds.txt
+*_last_update_id.txt
+last_update_id.txt
+father_time_last_update_id.txt

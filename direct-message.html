@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Direct Message Sender</title>
+  <link rel="stylesheet" href="https://unpkg.com/98.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #ece9d8;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .window {
+      margin-bottom: 20px;
+    }
+    .window-body {
+      padding: 10px;
+    }
+    .field-row {
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      resize: vertical;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #c3e6cb;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">Direct Message Sender</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+          <button aria-label="Maximize"></button>
+          <button aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <p>Send a message as an authorized user to the group</p>
+        
+        <div class="field-row-stacked">
+          <label for="username">Username:</label>
+          <input id="username" type="text" placeholder="Enter Telegram username (without @)">
+        </div>
+        
+        <div class="field-row-stacked">
+          <label for="message">Message:</label>
+          <textarea id="message" placeholder="Enter your message"></textarea>
+        </div>
+        
+        <div class="field-row">
+          <button id="send-btn">Send Message</button>
+          <button id="check-btn">Check Authorization</button>
+        </div>
+        
+        <div id="status" class="status hidden"></div>
+      </div>
+    </div>
+    
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">Information</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+          <button aria-label="Maximize"></button>
+          <button aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <p>This tool allows you to send messages to your Telegram group as if they were sent by an authorized user.</p>
+        <p>The message will appear in the group as if it was forwarded from the authorized user.</p>
+        <p>Only users that have been added to the authorized users list can send messages.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3001/api';
+    
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+    document.getElementById('check-btn').addEventListener('click', checkAuthorization);
+    
+    async function sendMessage() {
+      const username = document.getElementById('username').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const statusElement = document.getElementById('status');
+      
+      if (!username) {
+        showStatus('Please enter a username', 'error');
+        return;
+      }
+      
+      if (!message) {
+        showStatus('Please enter a message', 'error');
+        return;
+      }
+      
+      try {
+        const cleanUsername = username.startsWith('@') ? username.substring(1) : username;
+        
+        const response = await fetch(`${API_URL}/direct-message/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: cleanUsername,
+            text: message
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showStatus(`Message sent successfully to ${data.destination.groupLabel}`, 'success');
+          document.getElementById('message').value = '';
+        } else {
+          showStatus(`Error: ${data.message}`, 'error');
+        }
+      } catch (error) {
+        showStatus(`Error: ${error.message}`, 'error');
+      }
+    }
+    
+    async function checkAuthorization() {
+      const username = document.getElementById('username').value.trim();
+      
+      if (!username) {
+        showStatus('Please enter a username', 'error');
+        return;
+      }
+      
+      try {
+        const cleanUsername = username.startsWith('@') ? username.substring(1) : username;
+        
+        const response = await fetch(`${API_URL}/direct-message/check/${cleanUsername}`);
+        const data = await response.json();
+        
+        if (data.success && data.authorized) {
+          showStatus(`User @${cleanUsername} is authorized to send messages`, 'success');
+        } else {
+          showStatus(`User @${cleanUsername} is not authorized`, 'error');
+        }
+      } catch (error) {
+        showStatus(`Error: ${error.message}`, 'error');
+      }
+    }
+    
+    function showStatus(message, type) {
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = message;
+      statusElement.className = `status ${type}`;
+      statusElement.classList.remove('hidden');
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        statusElement.classList.add('hidden');
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

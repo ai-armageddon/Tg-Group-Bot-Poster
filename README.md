@@ -1,6 +1,6 @@
 # Telegram Post Composer
 
-A simple, clean, and modern UI for composing and sending posts to Telegram groups using your bot.
+A simple, clean, and modern UI for composing and sending posts to Telegram groups using your bot, with support for authorized users and message forwarding.
 
 ## Features
 
@@ -10,6 +10,10 @@ A simple, clean, and modern UI for composing and sending posts to Telegram group
 - Edit bot credentials
 - Configure destination group and topic IDs
 - Save all settings to MongoDB
+- Manage authorized users for each bot
+- Forward messages from authorized users to groups
+- Direct message interface for sending as authorized users
+- PM2 integration for running as a service
 
 ## Setup
 
@@ -50,8 +54,14 @@ A simple, clean, and modern UI for composing and sending posts to Telegram group
    npm start
    ```
 
+   Or use PM2 for production:
+   ```
+   ./start-pm2.sh
+   ```
+
 5. Open the application:
    - Open `telegram-composer.html` in your browser
+   - Or navigate to http://localhost:3001 if using the server
 
 ## Usage
 
@@ -116,3 +126,21 @@ This application uses environment variables for sensitive information. Make sure
 - Check the browser console for error messages
 - Ensure MongoDB is running and accessible
 - Verify that the server is running on port 3001 (or update the API_URL in the HTML file)
+
+## Additional Documentation
+
+- **README-PM2.md**: Instructions for running with PM2
+- **README-FORWARDING.md**: Details about the message forwarding feature
+- **AUTHORIZED-USERS-GUIDE.md**: Guide for managing authorized users
+
+## Message Forwarding
+
+The application supports two methods of message forwarding:
+
+1. **Web Interface**: Use the direct message interface at http://localhost:3001/direct-message to send messages as authorized users
+2. **Direct to Bot**: Authorized users can send messages directly to the bot, which will be forwarded to the configured group/topic
+
+To use the direct message feature:
+1. Add users to the authorized users list for a bot
+2. Have them send messages to your bot on Telegram
+3. The messages will be automatically forwarded to the configured group/topic
