@@ -72,6 +72,13 @@ function transformTwitterLinks(text) {
   return transformedText;
 }
 
+// Function to check if text contains Twitter/X links
+function containsTwitterLinks(text) {
+  if (!text) return false;
+  const twitterRegex = /(https?:\/\/(www\.)?(twitter\.com|x\.com)\/[^\s]+)/gi;
+  return twitterRegex.test(text);
+}
+
 // Function to forward a message to the destination
 async function forwardMessage(message) {
   try {
@@ -86,29 +93,45 @@ async function forwardMessage(message) {
 
     // Handle different types of messages
     if (message.text) {
-      // Transform any Twitter/X links in the message
+      // Check if the message contains Twitter/X links
       const originalText = message.text;
-      const transformedText = transformTwitterLinks(originalText);
+      const hasTwitterLinks = containsTwitterLinks(originalText);
 
-      // Log if links were transformed
-      if (originalText !== transformedText) {
+      if (hasTwitterLinks) {
+        // Transform the Twitter/X links
+        const transformedText = transformTwitterLinks(originalText);
+
+        // Log the transformation
         console.log('Twitter/X links detected and transformed');
         debugLog(`Original text: ${originalText}`);
         debugLog(`Transformed text: ${transformedText}`);
+
+        // Send only the transformed message
+        const response = await axios.post(`${baseUrl}/sendMessage`, {
+          ...messageParams,
+          text: transformedText,
+        });
+
+        if (!response.data.ok) {
+          throw new Error(`Failed to send message: ${response.data.description}`);
+        }
+
+        console.log(`Transformed message forwarded from @${message.from.username} to group`);
+        return true;
+      } else {
+        // No Twitter/X links, forward the original message
+        const response = await axios.post(`${baseUrl}/sendMessage`, {
+          ...messageParams,
+          text: originalText,
+        });
+
+        if (!response.data.ok) {
+          throw new Error(`Failed to send message: ${response.data.description}`);
+        }
+
+        console.log(`Regular message forwarded from @${message.from.username} to group`);
+        return true;
       }
-
-      // Send the message with transformed text
-      const response = await axios.post(`${baseUrl}/sendMessage`, {
-        ...messageParams,
-        text: transformedText,
-      });
-
-      if (!response.data.ok) {
-        throw new Error(`Failed to send message: ${response.data.description}`);
-      }
-
-      console.log(`Text message forwarded from @${message.from.username} to group`);
-      return true;
     } else {
       console.log('Message type not supported for forwarding');
       return false;
