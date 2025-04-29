@@ -13,6 +13,7 @@ A simple, clean, and modern UI for composing and sending posts to Telegram group
 - Manage authorized users for each bot
 - Forward messages from authorized users to groups
 - Direct message interface for sending as authorized users
+- Automatic Twitter/X link conversion to fxtwitter.com for better previews
 - PM2 integration for running as a service
 
 ## Setup
@@ -144,3 +145,4 @@ To use the direct message feature:
 1. Add users to the authorized users list for a bot
 2. Have them send messages to your bot on Telegram
 3. The messages will be automatically forwarded to the configured group/topic
+4. Any Twitter/X links in the messages will be automatically converted to fxtwitter.com for better previews

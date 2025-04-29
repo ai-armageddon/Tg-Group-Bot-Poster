@@ -6,6 +6,7 @@ This solution allows authorized users to send messages to your Telegram bot, whi
 
 - Authorized users can send messages to your bot
 - Messages are automatically forwarded to your group/topic
+- Twitter/X links are automatically converted to fxtwitter.com for better previews
 - No webhook required
 - Handles conflicts with other instances gracefully
 - Simple to set up and use
@@ -38,9 +39,12 @@ This solution allows authorized users to send messages to your Telegram bot, whi
 ## How It Works
 
 1. The script checks for new messages sent to your bot
-2. If a message is from an authorized user, it forwards the message to your group/topic
-3. The script handles conflicts with other instances gracefully
-4. The last processed update ID is saved to avoid processing the same message twice
+2. If a message is from an authorized user, it processes the message:
+   - Checks for Twitter/X links and converts them to fxtwitter.com
+   - This improves how links appear when shared in Telegram
+3. The processed message is forwarded to your group/topic
+4. The script handles conflicts with other instances gracefully
+5. The last processed update ID is saved to avoid processing the same message twice
 
 ## Troubleshooting
 

@@ -47,6 +47,26 @@ function saveLastUpdateId(id) {
   }
 }
 
+// Function to transform Twitter/X links to fxtwitter.com
+function transformTwitterLinks(text) {
+  if (!text) return text;
+
+  // Regular expression to match Twitter/X links
+  // This matches both twitter.com and x.com URLs with various path patterns
+  const twitterRegex = /(https?:\/\/(www\.)?(twitter\.com|x\.com)\/[^\s]+)/gi;
+
+  // Replace all matches with fxtwitter.com
+  const transformedText = text.replace(twitterRegex, (match) => {
+    // Extract the URL and replace the domain
+    const url = new URL(match);
+    const newUrl = `https://fxtwitter.com${url.pathname}${url.search}${url.hash}`;
+    console.log(`Transformed Twitter link: ${match} -> ${newUrl}`);
+    return newUrl;
+  });
+
+  return transformedText;
+}
+
 // Function to forward a message to the destination
 async function forwardMessage(message) {
   try {
@@ -61,10 +81,21 @@ async function forwardMessage(message) {
 
     // Handle different types of messages
     if (message.text) {
-      // Text message
+      // Transform any Twitter/X links in the message
+      const originalText = message.text;
+      const transformedText = transformTwitterLinks(originalText);
+
+      // Log if links were transformed
+      if (originalText !== transformedText) {
+        console.log('Twitter/X links detected and transformed');
+        debugLog(`Original text: ${originalText}`);
+        debugLog(`Transformed text: ${transformedText}`);
+      }
+
+      // Send the message with transformed text
       const response = await axios.post(`${baseUrl}/sendMessage`, {
         ...messageParams,
-        text: message.text,
+        text: transformedText,
       });
 
       if (!response.data.ok) {

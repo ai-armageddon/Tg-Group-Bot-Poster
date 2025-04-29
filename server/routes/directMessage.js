@@ -9,6 +9,31 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
+// Function to transform Twitter/X links to fxtwitter.com
+function transformTwitterLinks(text) {
+  if (!text) return text;
+
+  // Regular expression to match Twitter/X links
+  // This matches both twitter.com and x.com URLs with various path patterns
+  const twitterRegex = /(https?:\/\/(www\.)?(twitter\.com|x\.com)\/[^\s]+)/gi;
+
+  // Replace all matches with fxtwitter.com
+  const transformedText = text.replace(twitterRegex, (match) => {
+    try {
+      // Extract the URL and replace the domain
+      const url = new URL(match);
+      const newUrl = `https://fxtwitter.com${url.pathname}${url.search}${url.hash}`;
+      console.log(`Transformed Twitter link: ${match} -> ${newUrl}`);
+      return newUrl;
+    } catch (error) {
+      console.error(`Error transforming URL ${match}:`, error.message);
+      return match; // Return original URL if there's an error
+    }
+  });
+
+  return transformedText;
+}
+
 // Direct message forwarding endpoint
 router.post('/send', async (req, res) => {
   try {
@@ -59,12 +84,23 @@ router.post('/send', async (req, res) => {
       });
     }
 
+    // Transform any Twitter/X links in the message
+    const originalText = text;
+    const transformedText = transformTwitterLinks(originalText);
+
+    // Log if links were transformed
+    if (originalText !== transformedText) {
+      console.log('Twitter/X links detected and transformed in direct message');
+      console.log(`Original text: ${originalText}`);
+      console.log(`Transformed text: ${transformedText}`);
+    }
+
     // Send the message
     const baseUrl = `https://api.telegram.org/bot${bot.token}`;
     const response = await axios.post(`${baseUrl}/sendMessage`, {
       chat_id: destination.groupId,
       ...(destination.topicId && { message_thread_id: destination.topicId }),
-      text: text
+      text: transformedText
     });
 
     if (!response.data.ok) {
@@ -94,7 +130,7 @@ router.post('/send', async (req, res) => {
 router.get('/check/:username', async (req, res) => {
   try {
     const { username } = req.params;
-    
+
     if (!username) {
       return res.status(400).json({
         success: false,
