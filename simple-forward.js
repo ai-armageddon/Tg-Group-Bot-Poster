@@ -116,13 +116,27 @@ function transformTwitterLinks(text) {
   // This matches both twitter.com and x.com URLs with various path patterns
   const twitterRegex = /(https?:\/\/(www\.)?(twitter\.com|x\.com)\/[^\s]+)/gi;
 
+  // Check if the text is just a URL (common when sharing links)
+  const isJustUrl = text.trim().match(/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/[^\s]+$/i);
+
   // Replace all matches with fxtwitter.com
   const transformedText = text.replace(twitterRegex, (match) => {
     // Extract the URL and replace the domain
-    const url = new URL(match);
-    const newUrl = `https://fxtwitter.com${url.pathname}${url.search}${url.hash}`;
-    console.log(`Transformed Twitter link: ${match} -> ${newUrl}`);
-    return newUrl;
+    try {
+      const url = new URL(match);
+      const newUrl = `https://fxtwitter.com${url.pathname}${url.search}${url.hash}`;
+      console.log(`Transformed Twitter link: ${match} -> ${newUrl}`);
+
+      // If the message is just a URL, add a note that it's been transformed
+      if (isJustUrl) {
+        return `${newUrl}\n(Transformed from ${match} for better preview)`;
+      }
+
+      return newUrl;
+    } catch (error) {
+      console.error(`Error transforming URL ${match}:`, error.message);
+      return match; // Return original URL if there's an error
+    }
   });
 
   return transformedText;
