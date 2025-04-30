@@ -262,8 +262,15 @@ async function checkAndForwardMessages() {
           continue;
         }
 
+        // Check if this is a private chat (not a group message)
+        // In Telegram, private chats have type 'private', while groups have type 'group' or 'supergroup'
+        if (!message.chat || message.chat.type !== 'private') {
+          console.log(`Skipping message from @${message.from.username} because it's not from a private chat (type: ${message.chat ? message.chat.type : 'unknown'})`);
+          continue;
+        }
+
         const fromUsername = message.from.username;
-        console.log(`Received message from @${fromUsername}: ${message.text || '[non-text content]'}`);
+        console.log(`Received private message from @${fromUsername}: ${message.text || '[non-text content]'}`);
 
         // Check if the user is authorized
         debugLog(`Checking if user ${fromUsername} is in authorized list: ${config.authorizedUsers}`);
