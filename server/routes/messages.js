@@ -11,19 +11,35 @@ const os = require('os');
 // Send a message to Telegram
 router.post('/send', async (req, res) => {
   try {
-    const { botId, text, chatId, topicId, mediaType, mediaBase64 } = req.body;
-
-    // Get bot
+    const { text, chatId, topicId, mediaType, mediaBase64 } = req.body; // botId removed from here
+    let botIdFromRequest = req.body.botId; // Get botId separately
     let bot;
 
-    if (botId) {
-      bot = await Bot.findById(botId);
+    if (botIdFromRequest !== undefined && botIdFromRequest !== null) {
+      // A botId was provided in the request (it could be an empty string or a valid ID).
+      if (typeof botIdFromRequest !== 'string' || botIdFromRequest.trim() === '') {
+        // Provided botId is an empty string or not a string.
+        return res.status(400).json({ success: false, message: 'Invalid Bot ID provided. Cannot be empty or non-string.' });
+      }
+      // Now, botIdFromRequest is a non-empty string. Try to find it.
+      bot = await Bot.findById(botIdFromRequest);
+      if (!bot) {
+        // A specific, non-empty botId was given, but no bot with this ID was found.
+        return res.status(400).json({ success: false, message: `Bot with ID '${botIdFromRequest}' not found.` });
+      }
     } else {
+      // No botId was provided in the request (it was undefined or null). Use the default bot.
       bot = await Bot.findOne({ isDefault: true });
+      if (!bot) {
+        // No botId was provided, and no default bot exists either.
+        return res.status(400).json({ success: false, message: 'No bot specified and no default bot found.' });
+      }
     }
 
+    // As a final safeguard, though theoretically unreachable if logic above is perfect:
     if (!bot) {
-      return res.status(400).json({ success: false, message: 'Bot not found' });
+        console.error("Critical error: Bot resolution failed unexpectedly in /api/messages/send.");
+        return res.status(500).json({ success: false, message: 'Internal error resolving bot.' });
     }
 
     if (!chatId) {

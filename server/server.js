@@ -104,3 +104,5 @@ app.listen(PORT, () => {
   // Direct message API is also available
   console.log('Direct message API is available at /api/direct-message/send');
 });
+
+module.exports = app; // Export the app for testing purposes
